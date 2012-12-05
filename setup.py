@@ -1,13 +1,11 @@
 """
 Flask-MoreSQL
------------
-
+-------------
 A thin layer of glue between PostgreSQL stored procedures and Flask web
 applications.
 
 Links
 `````
-
 * `documentation <http://packages.python.org/Flask-MoreSQL>`_
 * `development version
   <http://github.com/ema/flask-moresql/zipball/master#egg=Flask-MoreSQL-dev>`_
