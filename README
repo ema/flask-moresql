@@ -1,0 +1,6 @@
+Flask-MoreSQL
+
+A thin layer of glue between PostgreSQL stored procedures and Flask web
+applications.
+
+Documentation: http://packages.python.org/Flask-MoreSQL/
