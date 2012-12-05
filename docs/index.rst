@@ -3,9 +3,11 @@ Flask-MoreSQL
 
 .. module:: flask_moresql
 
-Flask-MoreSQL is an extension to `Flask`_ that allows you to easily build
-RESTful APIs on top of your `PostgreSQL`_ applications. It is a thin layer of
-glue between PostgreSQL stored procedures and Flask web applications.
+Flask-MoreSQL is a thin layer of glue between PostgreSQL stored procedures and
+Python web applications.
+
+It is an extension to `Flask`_ that allows developers to easily build RESTful
+APIs on top of `PostgreSQL`_ applications. 
 
 Flask-MoreSQL depends on the `psycopg2`_ module.
 
@@ -28,8 +30,8 @@ Alternatively, use `easy_install`::
 Usage
 -----
 
-To start using your PostgreSQL database, create a :class:`Flask` application
-and connect it to a :class:`MoreSQL` object::
+To start exposing your PostgreSQL database via HTTP/JSON, create a
+:class:`Flask` application and connect it to a :class:`MoreSQL` object::
 
     from flask import Flask
     from flask_moresql import MoreSQL
@@ -46,7 +48,27 @@ You can then map routes to specific stored procedures as follows::
     def get_user_data():
         return db.execute('get_user', fields=['username', 'password'])
 
-The return value of your stored procedure will be returned as JSON to the user.
+The example above maps GET requests to `/user` to the `get_user` stored
+procedure. Other than the stored procedure name, the :meth:`execute` method
+takes a list as a parameter to specify which of the HTTP request values have to
+be used in the stored procedure call, `username` and `password` in our example.
+
+If the request values have to be modified before calling the stored procedure,
+they can be passed to :meth:`execute` via the optional keyword argument
+`values`::
+
+    @app.route('/user', methods=['GET'])
+    def get_user_data():
+        modified_values = {
+            'username': request.values.get('username').lower(),
+            'password': request.values.get('password')
+        }
+        return db.execute('get_user', 
+                          fields=['username', 'password'], 
+                          values=modified_values)
+
+Finally, the value returned by the stored procedure is returned as JSON to the
+client.
 
 API Reference
 -------------
