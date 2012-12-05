@@ -30,8 +30,8 @@ Alternatively, use `easy_install`::
 Usage
 -----
 
-To start exposing your PostgreSQL database via HTTP/JSON, create a
-:class:`Flask` application and connect it to a :class:`MoreSQL` object::
+To use Flask-MoreSQL, create a :class:`Flask` application and connect it to a
+:class:`MoreSQL` object::
 
     from flask import Flask
     from flask_moresql import MoreSQL
