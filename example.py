@@ -8,7 +8,7 @@ db = MoreSQL(app)
 
 @app.route('/', methods=['GET'])
 def index():
-    return db.execute('get_user', params=['username', 'password'])
+    return db.execute('get_user', fields=['username', 'password'])
 
 if __name__ == "__main__":
     app.run()
