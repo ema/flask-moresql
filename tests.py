@@ -52,7 +52,7 @@ $$ LANGUAGE plpgsql;
 
         @self.app.route('/test', methods=['POST'])
         def index():
-            return self.db.execute('get_user', params=['username', 'password'])
+            return self.db.execute('get_user', fields=['username', 'password'])
 
         rv = c.post('/test', data={ 'username': 'test_user', 'password': 'test_password', })
         self.assertEquals(200, rv.status_code)

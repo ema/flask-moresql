@@ -67,11 +67,21 @@ class MoreSQL(object):
 
         self.cursor = self.connection.cursor()
 
-    def execute(self, procname, params, values=None):
+    def execute(self, procname, fields, values=None):
+        """Execute the given stored procedure. Return results as a JSON
+        HTTP response.
+        
+        :param procname: the stored procedure name
+        :param fields: a list of dictionary fields used as parameters of the
+                       stored procedure
+        :param values: an optional dictionary of values from which the
+                       parameters should be taken. If omitted, default to the 
+                       values passed via HTTP
+        """
         if values is None:
             values = request.values
 
-        procargs = [ values.get(param) for param in params ]
+        procargs = [ values.get(field) for field in fields ]
 
         self.cursor.callproc(procname, procargs)
         self.connection.commit()
