@@ -35,29 +35,39 @@ class BasicApp(BaseTest):
         self.db = MoreSQL(self.app)
         self.client = self.app.test_client()
 
-    def test_return_string(self):
+    def __test_return_basic_type(self, sqltype, expected):
+        if type(expected) is str:
+            return_expected = "'%s'" % expected
+        else:
+            return_expected = expected
+
         self.db.cursor.execute("""
-CREATE OR REPLACE FUNCTION get_user(uname text, pwd text) 
-RETURNS text AS $$ 
-DECLARE result text;
-BEGIN 
-    SELECT uname INTO result; 
-    RETURN result;  
-END;
-$$ LANGUAGE plpgsql;
-""")
+            CREATE OR REPLACE FUNCTION get_%s() RETURNS %s AS $$ 
+            BEGIN 
+                RETURN %s;
+            END;
+            $$ LANGUAGE plpgsql;
+        """ % (sqltype, sqltype, return_expected))
 
-        @self.app.route('/test', methods=['POST'])
+        @self.app.route('/test')
         def test():
-            return self.db.execute('get_user', fields=['username', 'password'])
+            return self.db.execute('get_%s' % sqltype)
 
-        rv = self.client.post('/test', data={ 'username': 'test_user', 
-                                    'password': 'test_password', })
+        rv = self.client.get('/test')
         self.assertEquals(200, rv.status_code)
-        self.assertEquals("test_user", simplejson.loads(rv.data))
+        self.assertEquals(expected, simplejson.loads(rv.data))
+
+    def test_return_string(self):
+        self.__test_return_basic_type('text', 'hello world')
 
     def test_return_int(self):
-        pass
+        self.__test_return_basic_type('integer', 42)
+
+    def test_return_float(self):
+        self.__test_return_basic_type('real', 3.14)
+
+    def test_return_bool(self):
+        self.__test_return_basic_type('boolean', True)
 
     def test_inout(self):
         self.db.cursor.execute("""
