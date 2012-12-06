@@ -36,11 +36,11 @@ def _parse_rfc1738_args(name):
         (?:/(?P<database>.*))?
         ''', re.X)
 
-    m = pattern.match(name)
-    if m is None:
+    match = pattern.match(name)
+    if match is None:
         raise RuntimeError("Wrong DB URI string '%s'" % name)
 
-    components = m.groupdict()
+    components = match.groupdict()
 
     if components['name'] != 'postgres':
         raise RuntimeError("MoreSQL only supports postgres databases")
@@ -52,7 +52,14 @@ def _parse_rfc1738_args(name):
     return components
 
 class MoreSQL(object):
-    """Represents a PostgreSQL database."""
+    """Used to connect to a given PostgreSQL database.
+
+    To use MoreSQL you need to first create a Flask application, and then bind
+    a MoreSQL instance to it::
+
+        app = Flask(__name__)
+        db = MoreSQL(app)
+    """
     
     def __init__(self, app):
         self.app = app
@@ -60,10 +67,10 @@ class MoreSQL(object):
         creds = _parse_rfc1738_args(app.config.get('MORESQL_DATABASE_URI'))
         
         self.connection = psycopg2.connect(user=creds['username'], 
-                                      password=creds['password'], 
-                                      dbname=creds['database'], 
-                                      host=creds['host'], 
-                                      port=creds['port'])
+                                           password=creds['password'], 
+                                           dbname=creds['database'], 
+                                           host=creds['host'], 
+                                           port=creds['port'])
 
         self.cursor = self.connection.cursor()
 
@@ -78,15 +85,38 @@ class MoreSQL(object):
                        parameters should be taken. If omitted, default to the 
                        values passed via HTTP
         """
-        if values is None:
+        if values:
+            # Use user-supplied values
+            procargs = [ values.get(field) for field in fields ]
+        else:
+            # Use HTTP request values
             values = request.values
 
-        procargs = [ values.get(field) for field in fields ]
+            # Build list of parameters
+            procargs = []
+            for field in fields:
+                value = values.get(field)
+                if value is None:
+                    # Skip None values
+                    continue
 
-        self.cursor.callproc(procname, procargs)
+                try:
+                    procargs.append(simplejson.loads(value))
+                except simplejson.JSONDecodeError:
+                    procargs.append(value)
+
+        result = self.cursor.callproc(procname, procargs)
         self.connection.commit()
 
-        return make_response(simplejson.dumps(self.cursor.fetchall()))
+        if procargs == result:
+            # The parameters have not been modified. There was no in/out
+            # parameter, we have to fetch returned results from the cursor.
+            result = self.cursor.fetchall()
 
-if __name__ == "__main__":
-    print _parse_rfc1738_args('postgres://ema:test@localhost:5432/silencebay')
+        if len(result) == 1:
+            if len(result[0]) == 1:
+                result = result[0][0]
+            else:
+                result = result[0]
+
+        return make_response(simplejson.dumps(result))
