@@ -69,19 +69,38 @@ class BasicApp(BaseTest):
     def test_return_bool(self):
         self.__test_return_basic_type('boolean', True)
 
-    def test_inout(self):
+    def test_in_return(self):
         self.db.cursor.execute("""
-CREATE OR REPLACE FUNCTION sum_n_product(x int, y int, OUT sum int, OUT prod int) 
-AS $$
-BEGIN
-    sum := x + y;
-    prod := x * y;
-END;
-$$ LANGUAGE plpgsql;
-""")
+            CREATE OR REPLACE FUNCTION sum_n(x int, y int)
+            RETURNS integer AS $$
+            BEGIN
+                RETURN x + y;
+            END;
+            $$ LANGUAGE plpgsql;
+            """)
 
         @self.app.route('/test', methods=['GET'])
-        def sum1():
+        def test():
+            return self.db.execute('sum_n', 
+                fields=[ 'x', 'y', ])
+
+        rv = self.client.get('/test?x=10&y=32')
+        self.assertEquals(200, rv.status_code)
+        self.assertEquals(42, simplejson.loads(rv.data))
+        
+    def test_in_out(self):
+        self.db.cursor.execute("""
+            CREATE OR REPLACE FUNCTION sum_n_product(x int, y int,  
+                OUT sum int, OUT prod int) AS $$
+            BEGIN
+                sum := x + y;
+                prod := x * y;
+            END;
+            $$ LANGUAGE plpgsql;
+            """)
+
+        @self.app.route('/test', methods=['GET'])
+        def test():
             return self.db.execute('sum_n_product', 
                 fields=[ 'x', 'y', 'sum', 'prod' ])
 
@@ -97,6 +116,52 @@ $$ LANGUAGE plpgsql;
         rv = self.client.get('/test_omit_out?x=10&y=32')
         self.assertEquals(200, rv.status_code)
         self.assertEquals([ 42, 320 ], simplejson.loads(rv.data))
+
+    def test_return_table(self):
+        self.db.cursor.execute("""
+            CREATE TEMPORARY TABLE films(
+                code        char(5) CONSTRAINT firstkey PRIMARY KEY,
+                title       varchar(40) NOT NULL,
+                did         integer NOT NULL,
+                date_prod   date,
+                kind        varchar(10),
+                len         interval hour to minute
+            );
+
+            CREATE OR REPLACE FUNCTION get_films(wanted_title text) 
+            RETURNS TABLE (c char, d integer) AS $$
+            BEGIN
+                RETURN QUERY SELECT code, did FROM films 
+                    WHERE title=wanted_title;
+            END
+            $$ LANGUAGE plpgsql;
+            """)
+
+        @self.app.route('/test', methods=['GET'])
+        def test():
+            return self.db.execute('get_films', fields=[ 'title', ])
+
+        # empty list
+        rv = self.client.get('/test?title=ciao')
+        self.assertEquals(200, rv.status_code)
+        self.assertEquals([], simplejson.loads(rv.data))
+
+        # one row
+        self.db.cursor.execute("""INSERT INTO films (code, title, did)
+            VALUES (%s, %s, %s)""", ('tt011', 'The Shawshank Redemption', 42))
+
+        rv = self.client.get('/test?title=The Shawshank Redemption')
+        self.assertEquals(200, rv.status_code)
+        self.assertEquals([ 'tt011', 42 ], simplejson.loads(rv.data))
+
+        self.db.cursor.execute("""INSERT INTO films (code, title, did)
+            VALUES (%s, %s, %s)""", ('tt012', 'The Shawshank Redemption', 43))
+
+        # multiple rows
+        rv = self.client.get('/test?title=The Shawshank Redemption')
+        self.assertEquals(200, rv.status_code)
+        self.assertEquals([ ['tt011', 42], ['tt012', 43] ], 
+            simplejson.loads(rv.data))
 
 if __name__ == "__main__":
     unittest.main()
