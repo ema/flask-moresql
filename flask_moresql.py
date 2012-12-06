@@ -15,8 +15,6 @@ import urllib
 import psycopg2 
 import simplejson
 
-from functools import wraps
-
 from flask import request, make_response
 
 def _parse_rfc1738_args(name):
@@ -51,6 +49,25 @@ def _parse_rfc1738_args(name):
     del components['name']
     return components
 
+def _convert_http_value(value):
+    try:
+        return simplejson.loads(value)
+    except simplejson.JSONDecodeError:
+        return value
+
+def _get_procedure_arguments(fields, values):
+    if fields is None:
+        # The stored procedure has been called without parameters
+        return []
+
+    if values:
+        # Use user-supplied values
+        return [ values.get(field) for field in fields ]
+
+    # Use HTTP request values
+    return [ _convert_http_value(request.values.get(field)) 
+        for field in fields if request.values.get(field) is not None ]
+
 class MoreSQL(object):
     """Used to connect to a given PostgreSQL database.
 
@@ -74,38 +91,22 @@ class MoreSQL(object):
 
         self.cursor = self.connection.cursor()
 
-    def execute(self, procname, fields, values=None):
+    def execute(self, procname, fields=None, values=None):
         """Execute the given stored procedure. Return results as a JSON
         HTTP response.
         
         :param procname: the stored procedure name
         :param fields: a list of dictionary fields used as parameters of the
-                       stored procedure
+                       stored procedure. The procedure will be called with no
+                       arguments if omitted
         :param values: an optional dictionary of values from which the
                        parameters should be taken. If omitted, default to the 
                        values passed via HTTP
         """
-        if values:
-            # Use user-supplied values
-            procargs = [ values.get(field) for field in fields ]
-        else:
-            # Use HTTP request values
-            values = request.values
-
-            # Build list of parameters
-            procargs = []
-            for field in fields:
-                value = values.get(field)
-                if value is None:
-                    # Skip None values
-                    continue
-
-                try:
-                    procargs.append(simplejson.loads(value))
-                except simplejson.JSONDecodeError:
-                    procargs.append(value)
+        procargs = _get_procedure_arguments(fields, values)
 
         result = self.cursor.callproc(procname, procargs)
+
         self.connection.commit()
 
         if procargs == result:
