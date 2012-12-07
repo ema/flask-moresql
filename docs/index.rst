@@ -3,11 +3,12 @@ Flask-MoreSQL
 
 .. module:: flask_moresql
 
-Flask-MoreSQL is a thin layer of glue between PostgreSQL stored procedures and
-Python web applications.
+Flask-MoreSQL is an extension to `Flask`_, a microframework for Python, that
+allows developers to easily build RESTful APIs on top of `PostgreSQL`_
+databases. 
 
-It is an extension to `Flask`_ that allows developers to easily build RESTful
-APIs on top of `PostgreSQL`_ applications. 
+In other words, it is a thin layer of glue between Python web applications and
+PostgreSQL stored procedures.
 
 Flask-MoreSQL depends on the `psycopg2`_ module.
 
@@ -53,9 +54,8 @@ procedure. Other than the stored procedure name, the :meth:`execute` method
 takes a list as a parameter to specify which of the HTTP request values have to
 be used in the stored procedure call, `username` and `password` in our example.
 
-If the request values have to be modified before calling the stored procedure,
-they can be passed to :meth:`execute` via the optional keyword argument
-`values`::
+If request values have to be modified before calling the stored procedure, they
+can be passed to :meth:`execute` via the optional keyword argument `values`::
 
     @app.route('/user', methods=['GET'])
     def get_user_data():

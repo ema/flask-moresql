@@ -22,8 +22,8 @@ def dog(dog_id):
     if request.method == 'POST':
         return db.execute('update_dog', fields=[ 'dog_id', 'name', 'color' ])
 
-    # GET requests call get_dog(dog_id). Here dog_id is explicitly passed to
-    # the stored procedure using the 'values' keyword argument.
+    # In case of GET requests, call get_dog(dog_id). Here dog_id is explicitly
+    # passed to the stored procedure using the 'values' keyword argument.
     return db.execute(
         'get_dog', fields=[ 'dog_id' ], values={ 'dog_id': dog_id })
 

@@ -62,12 +62,14 @@ def parse_rfc1738_args(name):
     return components
 
 def _convert_http_value(value):
+    """Try to parse the given JSON value. Return raw value on failure."""
     try:
         return simplejson.loads(value)
     except simplejson.JSONDecodeError:
         return value
 
 def _get_procedure_arguments(fields, values):
+    """Return a list of parameters to be passed to the stored procedure."""
     if fields is None:
         # The stored procedure has been called without parameters
         return []
