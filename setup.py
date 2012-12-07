@@ -15,7 +15,7 @@ from setuptools import setup
 
 setup(
     name='Flask-MoreSQL',
-    version='0.1',
+    version='0.2',
     url='http://github.com/ema/flask-moresql',
     license='BSD',
     author='Emanuele Rocca',
@@ -25,7 +25,7 @@ setup(
     py_modules=['flask_moresql', 'tests', 'example'],
     zip_safe=False,
     platforms='any',
-    install_requires=[ 'Flask', 'psycopg2' ],
+    install_requires=[ 'Flask', 'psycopg2', 'simplejson' ],
     test_suite='tests',
     classifiers=[
         'Development Status :: 4 - Beta',
