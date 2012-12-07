@@ -3,7 +3,7 @@ import flask
 import unittest
 import simplejson
 
-from flask_moresql import MoreSQL
+from flask_moresql import MoreSQL, parse_rfc1738_args
 
 class BaseTest(unittest.TestCase):
 
@@ -24,6 +24,18 @@ class DatabaseURI(BaseTest):
         self.app.config['MORESQL_DATABASE_URI'] = \
             'mysql://username:password@hostname:3306/test'
         self.assertRaises(RuntimeError, MoreSQL, self.app)
+
+    def test_postgres_connstring(self):
+        expected = {  
+            'username': 'user', 
+            'password': 'pass', 
+            'host': 'host',
+            'port': '5432',
+            'database': 'dbname'
+        }
+
+        db_params = parse_rfc1738_args('postgres://user:pass@host:5432/dbname')
+        self.assertEquals(expected, db_params)
 
 class BasicApp(BaseTest):
     

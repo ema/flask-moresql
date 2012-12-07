@@ -17,7 +17,19 @@ import simplejson
 
 from flask import request, make_response
 
-def _parse_rfc1738_args(name):
+def parse_rfc1738_args(name):
+    """Parse the given database URI and return a dictionary of database
+    connection values.
+
+    Eg: parse_rfc1738_args('postgres://user:pass@host:5432/dbname')
+        -> { 
+            'username': 'user', 
+            'password': 'pass', 
+            'host': 'host',
+            'port': '5432',
+            'database': 'dbname'
+           }
+    """
     if name is None:
         raise RuntimeError("MORESQL_DATABASE_URI needs to be specified")
 
@@ -81,7 +93,7 @@ class MoreSQL(object):
     def __init__(self, app):
         self.app = app
 
-        creds = _parse_rfc1738_args(app.config.get('MORESQL_DATABASE_URI'))
+        creds = parse_rfc1738_args(app.config.get('MORESQL_DATABASE_URI'))
         
         self.connection = psycopg2.connect(user=creds['username'], 
                                            password=creds['password'], 
