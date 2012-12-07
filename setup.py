@@ -22,10 +22,11 @@ setup(
     author_email='ema@linux.it',
     description='Call PostgreSQL stored procedures from Flask',
     long_description=__doc__,
-    py_modules=['flask_moresql'],
+    py_modules=['flask_moresql', 'tests', 'example'],
     zip_safe=False,
     platforms='any',
     install_requires=[ 'Flask', 'psycopg2' ],
+    test_suite='tests',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
