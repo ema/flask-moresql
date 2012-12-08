@@ -2,7 +2,7 @@
 
 """A sample application using Flask-MoreSQL"""
 
-from flask import Flask
+from flask import Flask, request
 from flask_moresql import MoreSQL
 
 app = Flask(__name__)
@@ -28,4 +28,4 @@ def dog(dog_id):
         'get_dog', fields=[ 'dog_id' ], values={ 'dog_id': dog_id })
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
