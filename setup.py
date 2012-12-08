@@ -15,14 +15,14 @@ from setuptools import setup
 
 setup(
     name='Flask-MoreSQL',
-    version='0.2',
+    version='0.3',
     url='http://github.com/ema/flask-moresql',
     license='BSD',
     author='Emanuele Rocca',
     author_email='ema@linux.it',
     description='Call PostgreSQL stored procedures from Flask',
     long_description=__doc__,
-    py_modules=['flask_moresql', 'tests', 'example'],
+    py_modules=['flask_moresql', 'tests',],
     zip_safe=False,
     platforms='any',
     install_requires=[ 'Flask', 'psycopg2', 'simplejson' ],
