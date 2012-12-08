@@ -12,6 +12,7 @@
 
 import re
 import urllib
+import datetime
 import psycopg2 
 import simplejson
 
@@ -82,6 +83,10 @@ def _get_procedure_arguments(fields, values):
     return [ _convert_http_value(request.values.get(field)) 
         for field in fields if request.values.get(field) is not None ]
 
+def dthandler(obj):
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+
 class MoreSQL(object):
     """Used to connect to a given PostgreSQL database.
 
@@ -134,4 +139,4 @@ class MoreSQL(object):
             else:
                 result = result[0]
 
-        return make_response(simplejson.dumps(result))
+        return make_response(simplejson.dumps(result, default=dthandler))
