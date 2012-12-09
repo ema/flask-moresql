@@ -13,8 +13,10 @@
 import re
 import urllib
 import datetime
-import psycopg2 
 import simplejson
+
+import psycopg2 
+import psycopg2.extras
 
 from flask import request, make_response
 
@@ -108,7 +110,8 @@ class MoreSQL(object):
                                            host=creds['host'], 
                                            port=creds['port'])
 
-        self.cursor = self.connection.cursor()
+        self.cursor = self.connection.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor)
 
     def execute(self, procname, fields=None, values=None):
         """Execute the given stored procedure. Return results as a JSON
@@ -135,7 +138,7 @@ class MoreSQL(object):
 
         if len(result) == 1:
             if len(result[0]) == 1:
-                result = result[0][0]
+                result = result[0].values()[0]
             else:
                 result = result[0]
 

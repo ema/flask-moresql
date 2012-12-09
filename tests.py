@@ -118,7 +118,7 @@ class BasicApp(BaseTest):
 
         rv = self.client.get('/test?x=10&y=32')
         self.assertEquals(200, rv.status_code)
-        self.assertEquals([ 42, 320 ], simplejson.loads(rv.data))
+        self.assertEquals({ 'sum': 42, 'prod': 320 }, simplejson.loads(rv.data))
 
         @self.app.route('/test_omit_out', methods=['GET'])
         def sum2():
@@ -127,7 +127,7 @@ class BasicApp(BaseTest):
 
         rv = self.client.get('/test_omit_out?x=10&y=32')
         self.assertEquals(200, rv.status_code)
-        self.assertEquals([ 42, 320 ], simplejson.loads(rv.data))
+        self.assertEquals({ 'sum': 42, 'prod': 320 }, simplejson.loads(rv.data))
 
     def test_return_table(self):
         self.db.cursor.execute("""
@@ -164,7 +164,7 @@ class BasicApp(BaseTest):
 
         rv = self.client.get('/test?title=The Shawshank Redemption')
         self.assertEquals(200, rv.status_code)
-        self.assertEquals([ 'tt011', 42 ], simplejson.loads(rv.data))
+        self.assertEquals({ 'c': 'tt011', 'd': 42 }, simplejson.loads(rv.data))
 
         self.db.cursor.execute("""INSERT INTO films (code, title, did)
             VALUES (%s, %s, %s)""", ('tt012', 'The Shawshank Redemption', 43))
@@ -172,8 +172,8 @@ class BasicApp(BaseTest):
         # multiple rows
         rv = self.client.get('/test?title=The Shawshank Redemption')
         self.assertEquals(200, rv.status_code)
-        self.assertEquals([ ['tt011', 42], ['tt012', 43] ], 
-            simplejson.loads(rv.data))
+        expected = [ { 'c': 'tt011', 'd': 42 }, { 'c': 'tt012', 'd': 43 } ]
+        self.assertEquals(expected, simplejson.loads(rv.data))
 
 if __name__ == "__main__":
     unittest.main()
