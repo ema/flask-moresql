@@ -15,7 +15,7 @@ from setuptools import setup
 
 setup(
     name='Flask-MoreSQL',
-    version='0.3',
+    version='0.4',
     url='http://github.com/ema/flask-moresql',
     license='BSD',
     author='Emanuele Rocca',
