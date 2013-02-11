@@ -3,7 +3,7 @@ import flask
 import unittest
 import simplejson
 
-from flask_moresql import MoreSQL, parse_rfc1738_args
+from flask.ext.moresql import MoreSQL, parse_rfc1738_args
 
 class BaseTest(unittest.TestCase):
 

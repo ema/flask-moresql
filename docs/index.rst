@@ -35,7 +35,7 @@ To use Flask-MoreSQL, create a :class:`Flask` application and connect it to a
 :class:`MoreSQL` object::
 
     from flask import Flask
-    from flask_moresql import MoreSQL
+    from flask.ext.moresql import MoreSQL
 
     app = Flask(__name__)
     app.config['MORESQL_DATABASE_URI'] = 'postgres://user:pass@host:5432/dbname'
